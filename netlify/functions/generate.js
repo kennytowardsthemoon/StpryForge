@@ -10,7 +10,7 @@ exports.handler = async function(event) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': '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',
+        'x-api-key': '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',
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
