@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StoryForge — User Story & Test Case Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy: #0f1e36;
+    --navy-mid: #162847;
+    --navy-light: #1e3a5f;
+    --blue: #2563eb;
+    --blue-light: #3b82f6;
+    --cyan: #06b6d4;
+    --white: #ffffff;
+    --off-white: #f8fafc;
+    --slate: #94a3b8;
+    --slate-light: #e2e8f0;
+    --green: #10b981;
+    --green-bg: #ecfdf5;
+    --red: #ef4444;
+    --red-bg: #fef2f2;
+    --amber: #f59e0b;
+    --amber-bg: #fffbeb;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(15,30,54,0.10);
+    --shadow-lg: 0 8px 40px rgba(15,30,54,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; }
+
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+
+  .logo-text span { color: var(--cyan); }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+
+  .header-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+    background: rgba(6,182,212,0.12);
+    border: 1px solid rgba(6,182,212,0.25);
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+
+
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    background: var(--navy-mid);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .step-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px 14px 16px;
+    cursor: default;
+    position: relative;
+    transition: all 0.3s;
+    opacity: 0.45;
+  }
+
+  .step-tab.active { opacity: 1; }
+  .step-tab.completed { opacity: 0.7; cursor: pointer; }
+  .step-tab.completed:hover { opacity: 1; }
+
+  .step-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+  }
+
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--slate);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+
+  .step-tab.active .step-num {
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    border-color: transparent;
+    color: white;
+  }
+
+  .step-tab.completed .step-num {
+    background: var(--green);
+    border-color: transparent;
+    color: white;
+  }
+
+  .step-label { font-size: 0.78rem; font-weight: 500; color: var(--slate); white-space: nowrap; }
+  .step-tab.active .step-label { color: var(--white); }
+  .step-arrow { color: rgba(255,255,255,0.15); font-size: 0.8rem; padding: 0 4px; }
+
+
+
+  /* ── MAIN ── */
+  main {
+    flex: 1;
+    padding: 36px 40px;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(226,232,240,0.8);
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--slate-light);
+  }
+
+  .card-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .icon-blue   { background: #eff6ff; }
+  .icon-green  { background: var(--green-bg); }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem;
+    color: var(--navy);
+    line-height: 1.2;
+  }
+
+  .card-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+
+
+  /* ── FORM ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  input, textarea, select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    background: var(--off-white);
+    border: 1.5px solid var(--slate-light);
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    width: 100%;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--blue-light);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    background: white;
+  }
+
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--blue-light));
+    color: white;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .btn-secondary {
+    background: var(--off-white);
+    color: var(--text-muted);
+    border: 1.5px solid var(--slate-light);
+  }
+
+  .btn-secondary:hover { background: var(--slate-light); color: var(--text); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1.5px solid var(--slate-light);
+    padding: 7px 14px;
+    font-size: 0.78rem;
+  }
+
+  .btn-ghost:hover { background: var(--off-white); }
+
+  .btn-success {
+    background: linear-gradient(135deg, #059669, var(--green));
+    color: white;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.3);
+  }
+
+  .btn-success:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
+
+  .btn-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* ── OUTPUT ── */
+  .story-block {
+    background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .story-block-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+
+  .story-statement {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    color: var(--navy);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .ac-textarea {
+    background: var(--off-white);
+    border: 1.5px solid var(--slate-light);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--text);
+    width: 100%;
+    min-height: 140px;
+    font-family: 'DM Sans', sans-serif;
+    resize: vertical;
+    outline: none;
+  }
+
+  .ac-textarea:focus {
+    border-color: var(--blue-light);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    background: white;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* ── GHERKIN ── */
+  .gherkin-group { margin-bottom: 28px; }
+
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .group-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .badge-positive { background: var(--green-bg); color: #065f46; border: 1px solid #a7f3d0; }
+  .badge-negative { background: var(--red-bg);   color: #991b1b; border: 1px solid #fecaca; }
+  .badge-boundary { background: var(--amber-bg); color: #92400e; border: 1px solid #fde68a; }
+
+  .group-count { font-size: 0.78rem; color: var(--text-muted); }
+
+  .scenario-card {
+    border-radius: 10px;
+    border: 1.5px solid;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+
+  .scenario-card:hover { box-shadow: var(--shadow); }
+  .scenario-card.positive { border-color: #a7f3d0; background: #f0fdf9; border-left: 4px solid var(--green); }
+  .scenario-card.negative { border-color: #fecaca; background: #fff5f5; border-left: 4px solid var(--red); }
+  .scenario-card.boundary { border-color: #fde68a; background: #fffdf0; border-left: 4px solid var(--amber); }
+
+  .scenario-tag { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); font-family: 'Courier New', monospace; margin-bottom: 6px; }
+  .scenario-name { font-weight: 600; font-size: 0.9rem; color: var(--navy); margin-bottom: 12px; }
+  .gherkin-lines { font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.8; }
+
+  .gherkin-keyword { font-weight: 700; }
+  .kw-given { color: #7c3aed; }
+  .kw-when  { color: #2563eb; }
+  .kw-then  { color: #059669; }
+  .kw-and   { color: #64748b; }
+
+  .scenario-actions { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--slate-light);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { background: var(--off-white); color: var(--text); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+  /* ── LOADING ── */
+  .loading-overlay {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+  }
+
+  .loading-overlay.show { display: flex; }
+
+  .spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--slate-light);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { color: var(--text-muted); font-size: 0.88rem; font-weight: 500; }
+
+  .loading-dots::after {
+    content: '';
+    animation: dots 1.4s steps(4, end) infinite;
+  }
+
+  @keyframes dots {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+  }
+
+  /* ── MISC ── */
+  .step { display: none; }
+  .step.active { display: block; }
+  .divider { height: 1px; background: var(--slate-light); margin: 20px 0; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: var(--navy);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 9999;
+    pointer-events: none;
+  }
+
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy);
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .footer-left { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .footer-right a {
+    color: var(--cyan);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .footer-right a:hover { opacity: 0.8; }
+
+  .footer-divider { color: rgba(255,255,255,0.2); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    main { padding: 20px 16px; }
+    header { padding: 0 16px; }
+    .progress-bar { padding: 0 16px; overflow-x: auto; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+    .card { padding: 20px; }
+    .step-label { display: none; }
+    footer { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">Story<span>Forge</span></div>
+  </div>
+  <div class="header-right">
+    <div class="header-badge">AI-Powered</div>
+  </div>
+</header>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar">
+  <div class="step-tab active" id="tab1" onclick="goToStep(1)">
+    <div class="step-num" id="num1">1</div>
+    <div><div class="step-label">Capture</div></div>
+  </div>
+  <div class="step-arrow">›</div>
+  <div class="step-tab" id="tab2" onclick="goToStep(2)">
+    <div class="step-num" id="num2">2</div>
+    <div><div class="step-label">User Story</div></div>
+  </div>
+  <div class="step-arrow">›</div>
+  <div class="step-tab" id="tab3" onclick="goToStep(3)">
+    <div class="step-num" id="num3">3</div>
+    <div><div class="step-label">Test Cases</div></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- STEP 1 -->
+  <div class="step active" id="step1">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-blue">📋</div>
+        <div>
+          <div class="card-title">Capture Requirements</div>
+          <div class="card-subtitle">Fill in the story details — AI will generate the rest</div>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Story Summary *</label>
+          <input type="text" id="summary" placeholder="e.g. Reset online banking password via email link"/>
+        </div>
+        <div class="form-group full">
+          <label>Description *</label>
+          <textarea id="description" placeholder="Describe what the user needs and why. Include context, the problem being solved, and any relevant background."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Persona / User Role *</label>
+          <input type="text" id="persona" placeholder="e.g. bank customer, admin, analyst"/>
+        </div>
+        <div class="form-group">
+          <label>System / Feature Name</label>
+          <input type="text" id="system" placeholder="e.g. Online Banking Portal"/>
+        </div>
+        <div class="form-group full">
+          <label>Constraints or Scope</label>
+          <textarea id="constraints" style="min-height:70px" placeholder="e.g. GDPR compliance required, link must expire after 15 mins, password must meet complexity rules..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="priority">
+            <option value="High">🔴 High</option>
+            <option value="Medium" selected>🟡 Medium</option>
+            <option value="Low">🟢 Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Story Type</label>
+          <select id="storyType">
+            <option value="Functional">Functional</option>
+            <option value="Non-Functional">Non-Functional</option>
+            <option value="UI">UI / UX</option>
+            <option value="Integration">Integration</option>
+            <option value="Security">Security</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <div style="font-size:0.78rem;color:var(--text-muted)">* Required fields</div>
+        <button class="btn btn-primary" onclick="generateStory()" id="generateBtn">
+          ⚡ Generate Story & Tests
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="step2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-blue">📖</div>
+        <div>
+          <div class="card-title">User Story</div>
+          <div class="card-subtitle">AI-generated — edit any section before exporting</div>
+        </div>
+      </div>
+      <div class="loading-overlay" id="loadingStory">
+        <div class="spinner"></div>
+        <div class="loading-text">Generating your story<span class="loading-dots"></span></div>
+      </div>
+      <div id="storyOutput" style="display:none">
+        <div class="story-block">
+          <div class="story-block-label">User Story Statement</div>
+          <div class="story-statement" id="storyStatement"></div>
+        </div>
+        <div style="margin-bottom:16px">
+          <div class="section-label">
+            Acceptance Criteria
+            <button class="copy-btn" onclick="copySection('acTextarea', this)">Copy</button>
+          </div>
+          <textarea class="ac-textarea" id="acTextarea"></textarea>
+        </div>
+        <div>
+          <div class="section-label">
+            Definition of Done
+            <button class="copy-btn" onclick="copySection('dodTextarea', this)">Copy</button>
+          </div>
+          <textarea class="ac-textarea" id="dodTextarea" style="min-height:100px"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+          <button class="btn btn-primary" onclick="showTestCases()">Next: Test Cases →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="step3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-green">🧪</div>
+        <div>
+          <div class="card-title">Gherkin Test Cases</div>
+          <div class="card-subtitle">Positive · Negative · Boundary — BDD format</div>
+        </div>
+      </div>
+      <div class="loading-overlay" id="loadingTests">
+        <div class="spinner"></div>
+        <div class="loading-text">Generating test cases<span class="loading-dots"></span></div>
+      </div>
+      <div id="testOutput" style="display:none">
+        <div id="positiveGroup" class="gherkin-group"></div>
+        <div id="negativeGroup" class="gherkin-group"></div>
+        <div id="boundaryGroup" class="gherkin-group"></div>
+        <div class="divider"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="exportTxt()">⬇ Export .txt</button>
+            <button class="btn btn-success" onclick="startOver()">✦ New Story</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">StoryForge — Agile Story & Test Case Generator</div>
+  <div class="footer-right">
+    Built by <a href="https://www.linkedin.com/in/kens-scaria" target="_blank">Kens Scaria</a>
+    <span class="footer-divider">|</span>
+    Senior Consultant & AI Product Owner
+    <span class="footer-divider">|</span>
+    <a href="https://www.linkedin.com/in/kens-scaria" target="_blank">Connect on LinkedIn →</a>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let currentStep = 1;
+let generatedData = { story: '', ac: '', dod: '', tests: [] };
+
+// ─────────────────────────────────────────────
+// API — calls Netlify proxy, key is server-side
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────
+function goToStep(n) {
+  if (n < currentStep || document.getElementById('tab' + n).classList.contains('completed')) {
+    showStep(n);
+  }
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  document.querySelectorAll('.step-tab').forEach((t, i) => {
+    t.classList.remove('active', 'completed');
+    if (i + 1 < n) t.classList.add('completed');
+    if (i + 1 === n) t.classList.add('active');
+  });
+  for (let i = 1; i < n; i++) document.getElementById('num' + i).textContent = '✓';
+  document.getElementById('num' + n).textContent = n;
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────────
+// VALIDATION
+// ─────────────────────────────────────────────
+function validate() {
+  const summary = document.getElementById('summary').value.trim();
+  const desc    = document.getElementById('description').value.trim();
+  const persona = document.getElementById('persona').value.trim();
+  if (!summary) { toast('Please enter a Story Summary'); return false; }
+  if (!desc)    { toast('Please enter a Description'); return false; }
+  if (!persona) { toast('Please enter a Persona / User Role'); return false; }
+  return true;
+}
+
+// ─────────────────────────────────────────────
+// MAIN GENERATE
+// ─────────────────────────────────────────────
+async function generateStory() {
+  if (!validate()) return;
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+
+  showStep(2);
+  document.getElementById('loadingStory').classList.add('show');
+  document.getElementById('storyOutput').style.display = 'none';
+
+  const summary     = document.getElementById('summary').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const persona     = document.getElementById('persona').value.trim();
+  const system      = document.getElementById('system').value.trim() || 'the system';
+  const constraints = document.getElementById('constraints').value.trim();
+  const priority    = document.getElementById('priority').value;
+  const storyType   = document.getElementById('storyType').value;
+
+  const prompt = `You are an expert Agile Business Analyst. Based on the inputs below, generate structured outputs in JSON.
+
+INPUTS:
+- Summary: ${summary}
+- Description: ${description}
+- Persona: ${persona}
+- System: ${system}
+- Constraints/Scope: ${constraints || 'None specified'}
+- Priority: ${priority}
+- Story Type: ${storyType}
+
+OUTPUT FORMAT (return ONLY valid JSON, no markdown, no explanation):
+{
+  "storyStatement": "As a [persona], I want to [goal], so that [benefit]",
+  "acceptanceCriteria": ["AC1: ...", "AC2: ...", "AC3: ...", "AC4: ...", "AC5: ..."],
+  "definitionOfDone": ["☐ ...", "☐ ...", "☐ ...", "☐ ..."],
+  "testCases": {
+    "positive": [
+      {"scenario": "name", "given": "...", "when": "...", "then": "...", "and": ""},
+      {"scenario": "name", "given": "...", "when": "...", "then": "...", "and": ""},
+      {"scenario": "name", "given": "...", "when": "...", "then": "...", "and": ""}
+    ],
+    "negative": [
+      {"scenario": "name", "given": "...", "when": "...", "then": "...", "and": ""},
+      {"scenario": "name", "given": "...", "when": "...", "then": "...", "and": ""},
+      {"scenario": "name", "given": "...", "when": "...", "then": "...", "and": ""}
+    ],
+    "boundary": [
+      {"scenario": "name", "given": "...", "when": "...", "then": "...", "and": ""},
+      {"scenario": "name", "given": "...", "when": "...", "then": "...", "and": ""}
+    ]
+  }
+}
+
+Rules:
+- positive: exactly 3 happy-path scenarios
+- negative: exactly 3 error/invalid/unauthorised scenarios
+- boundary: exactly 2 edge-value/limit scenarios
+- All scenarios must be specific to the summary and description given
+- Acceptance criteria must reference constraints if provided
+- Definition of Done must reflect story type: ${storyType}`;
+
+  let parsed = null;
+
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] })
+    });
+    if (response.ok) {
+      const data  = await response.json();
+      const raw   = data.content.map(b => b.text || '').join('');
+      const clean = raw.replace(/```json|```/g, '').trim();
+      parsed = JSON.parse(clean);
+    } else {
+      console.error('Proxy error:', await response.text());
+    }
+  } catch (err) {
+    console.error('Fetch error:', err);
+  }
+
+  // Fallback if API failed
+  if (!parsed) {
+    parsed = buildFallback(summary, description, persona, system, constraints, storyType);
+  }
+
+  generatedData = {
+    summary, description, persona, system, constraints, priority, storyType,
+    story: parsed.storyStatement,
+    ac:    parsed.acceptanceCriteria.join('\n'),
+    dod:   parsed.definitionOfDone.join('\n'),
+    tests: parsed.testCases
+  };
+
+  renderStory();
+  btn.disabled = false;
+  btn.textContent = '⚡ Generate Story & Tests';
+}
+
+// ─────────────────────────────────────────────
+// RENDER STORY
+// ─────────────────────────────────────────────
+function renderStory() {
+  document.getElementById('loadingStory').classList.remove('show');
+  document.getElementById('storyStatement').textContent = generatedData.story;
+  document.getElementById('acTextarea').value  = generatedData.ac;
+  document.getElementById('dodTextarea').value = generatedData.dod;
+  document.getElementById('storyOutput').style.display = 'block';
+}
+
+// ─────────────────────────────────────────────
+// SHOW TEST CASES
+// ─────────────────────────────────────────────
+function showTestCases() {
+  showStep(3);
+  document.getElementById('loadingTests').classList.add('show');
+  document.getElementById('testOutput').style.display = 'none';
+  setTimeout(() => {
+    renderTestCases();
+    document.getElementById('loadingTests').classList.remove('show');
+    document.getElementById('testOutput').style.display = 'block';
+  }, 500);
+}
+
+function renderTestCases() {
+  const t = generatedData.tests;
+  renderGroup('positiveGroup', t.positive, 'positive', '@positive', '✅ Positive Test Cases', 'badge-positive');
+  renderGroup('negativeGroup', t.negative, 'negative', '@negative', '❌ Negative Test Cases', 'badge-negative');
+  renderGroup('boundaryGroup', t.boundary, 'boundary', '@boundary', '🔲 Boundary Test Cases', 'badge-boundary');
+}
+
+function renderGroup(containerId, scenarios, type, tag, label, badgeClass) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = `
+    <div class="group-header">
+      <span class="group-badge ${badgeClass}">${label}</span>
+      <span class="group-count">${scenarios.length} scenario${scenarios.length !== 1 ? 's' : ''}</span>
+    </div>`;
+  scenarios.forEach((sc, i) => {
+    const cardId = `${type}_${i}`;
+    const andLine = sc.and ? `<br><span class="gherkin-keyword kw-and">  And</span> ${esc(sc.and)}` : '';
+    const card = document.createElement('div');
+    card.className = `scenario-card ${type}`;
+    card.innerHTML = `
+      <div class="scenario-actions">
+        <button class="copy-btn" onclick="copyScenario('${cardId}', this)">Copy</button>
+      </div>
+      <div class="scenario-tag">${tag}</div>
+      <div class="scenario-name">Scenario: ${esc(sc.scenario)}</div>
+      <div class="gherkin-lines" id="${cardId}">
+        <span class="gherkin-keyword kw-given">  Given</span> ${esc(sc.given)}<br>
+        <span class="gherkin-keyword kw-when">  When</span> ${esc(sc.when)}<br>
+        <span class="gherkin-keyword kw-then">  Then</span> ${esc(sc.then)}${andLine}
+      </div>`;
+    el.appendChild(card);
+  });
+}
+
+function esc(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─────────────────────────────────────────────
+// FALLBACK (rule-based)
+// ─────────────────────────────────────────────
+function buildFallback(summary, description, persona, system, constraints, storyType) {
+  const s = summary.toLowerCase();
+  const ac = [
+    `AC1: The system shall allow the ${persona} to ${s} successfully when valid inputs are provided.`,
+    `AC2: The system shall validate all required fields before processing the request.`,
+    `AC3: The system shall display a clear confirmation message upon successful completion.`,
+    `AC4: The system shall log all actions for audit and compliance purposes.`,
+    `AC5: The system shall handle errors gracefully and display user-friendly error messages.`
+  ];
+  if (constraints) ac.push(`AC6: The system shall adhere to the following constraints: ${constraints}`);
+
+  const dodBase = ['☐ Code reviewed and approved by a peer', '☐ Unit tests written and all passing', '☐ Acceptance criteria verified by Product Owner', '☐ No critical or high-severity defects open'];
+  const dodExtras = {
+    Security: ['☐ Security review completed', '☐ Penetration test scenarios validated'],
+    Integration: ['☐ Integration tests passing in staging environment', '☐ API contract documented in Confluence'],
+    UI: ['☐ Responsive design tested across Chrome, Edge, Safari', '☐ Accessibility (WCAG 2.1 AA) validated'],
+    'Non-Functional': ['☐ Performance benchmarks met under load', '☐ Load test results within agreed SLA']
+  };
+
+  return {
+    storyStatement: `As a ${persona}, I want to ${s}, so that I can complete this task efficiently and securely within ${system}.`,
+    acceptanceCriteria: ac,
+    definitionOfDone: [...dodBase, ...(dodExtras[storyType] || [])],
+    testCases: {
+      positive: [
+        { scenario: `Successful ${s} with valid inputs`, given: `the ${persona} is on the ${system} page`, when: `the ${persona} provides all valid required information and submits`, then: `the system processes the request successfully and shows a confirmation`, and: '' },
+        { scenario: `${s} with all optional fields populated`, given: `the ${persona} is logged into ${system}`, when: `the ${persona} fills all fields including optional ones and submits`, then: `the system accepts all data and returns a success response`, and: '' },
+        { scenario: `${s} and receives a confirmation notification`, given: `the ${persona} has submitted a valid request in ${system}`, when: `the system finishes processing`, then: `a confirmation is displayed on screen and a notification is sent to the ${persona}`, and: '' }
+      ],
+      negative: [
+        { scenario: `${s} with missing required fields`, given: `the ${persona} is on the ${system} page`, when: `the ${persona} submits the form with required fields left blank`, then: `the system displays inline validation errors and does not process the request`, and: '' },
+        { scenario: `${s} with an invalid input format`, given: `the ${persona} enters data in an incorrect format`, when: `the ${persona} submits the form`, then: `the system highlights the invalid field and shows a specific error message`, and: '' },
+        { scenario: `Unauthorised access attempt for ${s}`, given: `an unauthenticated user attempts to reach the ${system} feature`, when: `the user tries to submit the request`, then: `the system rejects the request and redirects to the login page with an appropriate message`, and: '' }
+      ],
+      boundary: [
+        { scenario: `${s} with maximum allowed character input`, given: `the ${persona} enters the maximum permitted number of characters in all text fields`, when: `the form is submitted`, then: `the system accepts the input and processes correctly without truncation or error`, and: '' },
+        { scenario: `${s} with only mandatory fields and all optional fields empty`, given: `the ${persona} leaves all optional fields blank`, when: `the mandatory-only form is submitted`, then: `the system successfully processes using default values for any empty optional fields`, and: '' }
+      ]
+    }
+  };
+}
+
+// ─────────────────────────────────────────────
+// COPY UTILITIES
+// ─────────────────────────────────────────────
+function copySection(id, btn) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.value || el.textContent).then(() => {
+    btn.textContent = '✓ Copied'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyScenario(id, btn) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    btn.textContent = '✓ Copied'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ─────────────────────────────────────────────
+// EXPORT
+// ─────────────────────────────────────────────
+function exportTxt() {
+  const ac  = document.getElementById('acTextarea').value;
+  const dod = document.getElementById('dodTextarea').value;
+
+  const content = [
+    '═══════════════════════════════════════════════════════════',
+    '  STORYFORGE — User Story & Test Case Export',
+    `  Generated: ${new Date().toLocaleString()}`,
+    `  Built by: Kens Scaria | linkedin.com/in/kens-scaria`,
+    '═══════════════════════════════════════════════════════════',
+    '',
+    '── USER STORY STATEMENT ──────────────────────────────────',
+    generatedData.story,
+    '',
+    '── ACCEPTANCE CRITERIA ───────────────────────────────────',
+    ac,
+    '',
+    '── DEFINITION OF DONE ────────────────────────────────────',
+    dod,
+    '',
+    '── GHERKIN TEST CASES ────────────────────────────────────',
+    '',
+    '[ POSITIVE — Happy Path ]',
+    ...generatedData.tests.positive.map(formatScenario('@positive')),
+    '',
+    '[ NEGATIVE — Error & Failure States ]',
+    ...generatedData.tests.negative.map(formatScenario('@negative')),
+    '',
+    '[ BOUNDARY — Edge Values & Limits ]',
+    ...generatedData.tests.boundary.map(formatScenario('@boundary')),
+    '',
+    '═══════════════════════════════════════════════════════════'
+  ].join('\n');
+
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `storyforge-${generatedData.summary.replace(/\s+/g,'-').toLowerCase().slice(0,40)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ Exported successfully');
+}
+
+function formatScenario(tag) {
+  return sc => [
+    '',
+    tag,
+    `Scenario: ${sc.scenario}`,
+    `  Given ${sc.given}`,
+    `  When ${sc.when}`,
+    `  Then ${sc.then}`,
+    sc.and ? `  And ${sc.and}` : ''
+  ].filter(l => l !== null).join('\n');
+}
+
+// ─────────────────────────────────────────────
+// RESET
+// ─────────────────────────────────────────────
+function startOver() {
+  ['summary','description','persona','system','constraints'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('priority').value  = 'Medium';
+  document.getElementById('storyType').value = 'Functional';
+  ['positiveGroup','negativeGroup','boundaryGroup'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+  for (let i = 1; i <= 3; i++) document.getElementById('num' + i).textContent = i;
+  document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('completed'));
+  generatedData = { story: '', ac: '', dod: '', tests: [] };
+  showStep(1);
+}
+
+// ─────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+</script>
+</body>
+</html>
