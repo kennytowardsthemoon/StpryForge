@@ -713,16 +713,39 @@
 <footer>
   <div class="footer-left">StoryForge — Agile Story & Test Case Generator</div>
   <div class="footer-right">
-    Built by <a href="https://www.linkedin.com/in/kens-scaria" target="_blank">Kens Scaria</a>
+    Built by <a href="#" onclick="showKensModal(event)">Kens Scaria</a>
     <span class="footer-divider">|</span>
-    Senior Consultant & AI Product Owner
+    AI Product Owner
     <span class="footer-divider">|</span>
-    <a href="https://www.linkedin.com/in/kens-scaria" target="_blank">Connect on LinkedIn →</a>
+    <a href="https://www.linkedin.com/in/kens-scaria-a975ab109/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn →</a>>
   </div>
 </footer>
 
 <!-- TOAST -->
 <div id="toast"></div>
+
+<!-- KENS MODAL -->
+<div id="kensModal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(15,30,54,0.75);z-index:10000;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:16px;padding:36px 40px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:fadeUp 0.3s ease both">
+    <div style="font-size:3rem;margin-bottom:12px">🕵️</div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:#0f1e36;margin-bottom:10px">Oh, you clicked on me.</h2>
+    <p style="font-size:0.88rem;color:#64748b;line-height:1.7;margin-bottom:22px">
+      Bold move. I'm Kens — Senior Consultant, AI Product Owner, and apparently now a weekend app developer.<br><br>
+      I built StoryForge with vibes, coffee, and Claude. No dev team. No sprints. Just vibes.<br><br>
+      If you want to talk AI, product delivery, or how to reclaim your Monday mornings — let's connect. 🚀
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a href="https://www.linkedin.com/in/kens-scaria-a975ab109/" target="_blank" rel="noopener noreferrer"
+         style="background:linear-gradient(135deg,#2563eb,#3b82f6);color:white;padding:11px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.88rem;display:inline-flex;align-items:center;gap:6px">
+        👔 Let's Connect
+      </a>
+      <button onclick="document.getElementById('kensModal').style.display='none'"
+              style="background:#f1f5f9;color:#64748b;padding:11px 22px;border-radius:8px;border:1.5px solid #e2e8f0;font-weight:600;font-size:0.88rem;cursor:pointer;font-family:'DM Sans',sans-serif">
+        Maybe later 😅
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ─────────────────────────────────────────────
@@ -1012,7 +1035,7 @@ function exportTxt() {
     '═══════════════════════════════════════════════════════════',
     '  STORYFORGE — User Story & Test Case Export',
     `  Generated: ${new Date().toLocaleString()}`,
-    `  Built by: Kens Scaria | linkedin.com/in/kens-scaria`,
+    `  Built by: Kens Scaria | linkedin.com/in/kens-scaria-a975ab109/`,
     '═══════════════════════════════════════════════════════════',
     '',
     '── USER STORY STATEMENT ──────────────────────────────────',
@@ -1091,6 +1114,13 @@ function toast(msg) {
 // ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// KENS MODAL
+// ─────────────────────────────────────────────
+function showKensModal(e) {
+  e.preventDefault();
+  document.getElementById('kensModal').style.display = 'flex';
+}
 </script>
 </body>
 </html>
