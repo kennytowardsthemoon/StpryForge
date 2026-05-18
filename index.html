@@ -849,7 +849,8 @@ Rules:
       const clean = raw.replace(/```json|```/g, '').trim();
       parsed = JSON.parse(clean);
     } else {
-      console.error('Proxy error:', await response.text());
+      const errData = await response.json();
+      console.error('API error:', errData);
     }
   } catch (err) {
     console.error('Fetch error:', err);
